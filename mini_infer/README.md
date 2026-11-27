@@ -41,6 +41,8 @@ cache_MHA = heads × (nope + rope + v) = 4 × 48 = 192
 跑 `test_model.py` 的 `test_mla_cache_saving` 看数字；跑
 `test_kv_cache_equivalence` 确认增量解码与整段前向逐位一致。
 
+带已有 KV cache 的多 token 输入（例如投机解码验证块）也需要因果掩码：块内第 `i` 个查询只能看到缓存历史及块内前 `i + 1` 个 token。`test_cached_chunks.py` 对比多种分块方式下的全部 logits 和逐层缓存，并验证修改未来 token 不影响较早位置的输出。运行 `python -m unittest discover -s mini_infer -p 'test_*.py' -v` 可执行这些回归测试及采样测试。
+
 **生产版在做什么**（对应 `notes/02` 与 DeepInfer `attn.py`）：
 权重吸收把 W_UK/W_UV 折进 Q/O 侧，升投影就不再出现在每步前向里；
 KV 本身再压缩（`kv_compress_ratio` + Gate）、FP8 量化、
