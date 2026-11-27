@@ -77,6 +77,7 @@ def sample_token(logits: torch.Tensor, temperature: float = 0.0, top_k: int = 0,
     if temperature <= 0:
         return int(logits.argmax())
     probs = F.softmax(logits / temperature, dim=-1)
+    idx = torch.arange(probs.numel(), device=probs.device)
     if top_k > 0:
         probs, idx = torch.topk(probs, top_k)
     if top_p < 1.0:
@@ -84,7 +85,7 @@ def sample_token(logits: torch.Tensor, temperature: float = 0.0, top_k: int = 0,
         cum = torch.cumsum(sorted_probs, dim=-1)
         keep = cum - sorted_probs < top_p                    # 至少保留第一个
         probs = sorted_probs[keep] / sorted_probs[keep].sum()
-        idx = idx[keep] if top_k > 0 else sorted_idx[keep]
+        idx = idx[sorted_idx[keep]]
     choice = torch.multinomial(probs, 1, generator=generator)
     return int(idx[choice])
 
