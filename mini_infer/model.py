@@ -155,8 +155,9 @@ class MLA(nn.Module):
         scale = 1.0 / math.sqrt(cfg.qk_head_dim)
         scores = (q_nope @ k_nope.transpose(-1, -2) + q_rope_h @ k_rope_h.transpose(-1, -2)) * scale
 
-        if Tq == Tk:  # prefill：因果掩码
-            mask = torch.ones(Tq, Tk, dtype=torch.bool, device=h.device).tril()
+        if Tq > 1:  # prefill 或带缓存的多 token 验证块都必须保持因果性
+            # 查询 i 的绝对位置是 Tk - Tq + i；仅允许读取该位置及之前的 key。
+            mask = torch.ones(Tq, Tk, dtype=torch.bool, device=h.device).tril(diagonal=Tk - Tq)
             scores = scores.masked_fill(~mask, float("-inf"))
         # decode（Tq=1, Tk=全历史）天然只看过去，无需掩码
 
