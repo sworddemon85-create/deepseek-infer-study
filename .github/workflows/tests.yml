@@ -9,5 +9,5 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-      - run: python -m unittest discover -s mini_infer -p test_sampling.py -v
+      - run: python -m unittest discover -s mini_infer -p 'test_*.py' -v
       - run: python mini_infer/test_model.py
